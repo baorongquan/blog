@@ -50,6 +50,7 @@ category_map:
     配置: config
     数据库: database
     其他: other
+    网络: network
 tag_map:
     
 
