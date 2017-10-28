@@ -1,0 +1,114 @@
+---
+title: linux_ssr_use
+date: 2017-09-09 18:25:06
+tags: [网络]
+categories: 配置
+---
+
+# linux 使用ssr进行科学上网
+## ss使用
+之前一直使用的命令行sslocal对shadowsocks进行连接，使用简单,顺便记录下：
+> 先下载shadowsocks
+``` shell
+sudo apt-get install python-pip
+pip install shadowsocks
+```
+下载完成后把ss的服务器配置放到 /etc/shadowsocks.json（没有文件就新建一个）里
+配置类似，替换对应的字段即可
+``` json
+{
+    "server": "server.com",
+    "local_address": "127.0.0.1",
+    "local_port": 1080,
+    "timeout": 300,
+    "workers": 1,
+    "server_port": 12345,
+    "password": "mypassword",
+    "method": "aes-256-cfb",
+    "obfs": "plain",
+    "protocol": "origin"
+}
+```
+> 连接方法
+``` shell
+sslocal -c /etc/shadowsocks
+```
+
+## ssr 使用
+ss使用方式简单，为了跟上大家的步伐，当然还有就是ss无法使用混淆，所以今天更换为ssr
+### 步骤1：从github上下载shadowsocksr
+``` shell 
+sudo apt-get install git
+git clone https://github.com/shadowsocksr/shadowsocksr.git
+```
+### 步骤2：从github上下载可以在界面上添加配置的客户端 electron-ssr
+[下载地址](https://github.com/erguotou520/electron-ssr) ,下载最新的release版本即可，下载完成后解压,
+打开electron-ssr即可看到界面，然后选择步骤1中下载的 shadowsocksr/shadowsocks 所在目录，保存后添加配置，
+我一般直接拷贝ssr连接到最后一个ssr选项中。添加完后配置在~/.config/electron-ssr/shadowsocks.json中，
+如果配置错误把这个文件删了重新打开electron-ssr添加（我不删除时再次打开界面不会显示）
+```shell
+tar xzvf electron-ssr*
+cd electron-ssr*
+./electron-ssr
+```
+到这里我原以为到shadowsocksr/shadowsocks目录下执行
+```shell
+python local.py -c ~/.config/electron-ssr/shadowsocksr.json
+```
+就可以使用了，但是执行时出错了，看了下错误是因为配置的加密方式是 chacha20,但是系统默认是不支持的，so
+### 步骤3：从github上下载 libsodium，由于最新的1.0.13版本在我电脑上安装失败，所以我下载了1.0.12的release版本，
+[下载地址](https://github.com/jedisct1/libsodium/releases/tag/1.0.12),下载完成后
+```shell
+tar xzvf libsodium-1.0.12.tar.gz
+cd libsodium*
+sudo ./configure 
+sudo  make -j4 && make install 
+cd /etc/ld.so.conf.d
+sudo vim usr_local_lib.conf (添加一句 /usr/local/lib ,保存退出)
+sudo ldconfig
+```
+到这里安装都算完了，可是当我再次打开 local.py时还是报错，于是我看了下 ~/.config/electron-ssr/shadowsocksr.json的内容，
+有很多字段和ss的不一样，于是我就想把~/.config/electron-ssr/shadowsocksr.json服务器配置字段改成ss时的配置试试，于是配置从
+```json
+{
+      "host": "server.com",
+      "localAddr": "127.0.0.1",
+      "localPort": "1080",
+      "method": "chacha20",
+      "obfs": "tls1.2_ticket_auth",
+      "obfsparam": "",
+	  "password": "password",
+      "port": "8388",
+      "protocol": "auth_chain_a",
+      "remark": ""
+}
+```
+改为(其他的内容我都删除了，然后主要修改了一些键值,去掉了端口的引号)
+```json
+{
+  "server": "server.com",
+  "local_address": "127.0.0.1",
+  "local_port": 1080,
+  "method": "chacha20",
+  "obfs": "tls1.2_ticket_auth",
+  "obfsparam": "",
+  "password": "password",
+  "server_port": 8388,
+  "protocol": "auth_chain_a",
+  "remark": ""
+}
+```
+再次通过
+```shell
+python local.py -c ~/.config/electron-ssr/shadowsocksr.json
+```
+打开就可以使用了,真是折腾啊！
+
+## 总结下：
+* 下载shadowsocksr
+* 下载electron-ssr方便添加配置(可以添加了还是要改，也就只能来解析一些只提供ssr连接，不提供配置的站点的配置)
+* 下载libsodium已支持chacha20的加密方式
+* 修改配置
+
+总算用上了，不过应该还有更简单的方式，如果有那位知道，请一定要告诉我哦。再次谢过！
+
