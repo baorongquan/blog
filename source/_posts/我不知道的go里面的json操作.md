@@ -1,7 +1,7 @@
 ---
 title: 我不知道的go里面的json操作
 date: 2018-04-05 12:04:39
-tags: [golang]
+tags: [golang, json]
 categories: programming
 ---
 
@@ -23,7 +23,7 @@ categories: programming
 }
 ```
 
-# 三、自己实现MarshalJson 和 UnMarshalJson 替换掉默认的Marshal和UnMarshal方法，自己定制序列化和反序列化
+# 三、自己实现MarshalJSON 和 UnmarshalJSON 替换掉默认的Marshal和UnMarshal方法，自己定制序列化和反序列化
 
 需要了解更多json的高级操作可以看json的源码注释
 > /src/encoding/json/encode.go
