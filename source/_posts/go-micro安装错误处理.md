@@ -1,5 +1,5 @@
 ---
-title: go-micro安装错误处理记录
+title: go-micro安装错误处理
 date: 2018-04-18 20:06:06
 tags: [program]
 categories: 配置
