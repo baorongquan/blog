@@ -2,7 +2,7 @@
 title: 记一次golang经典错误--for循环中的go协程调用
 date: 2018-05-06 16:04:30
 tags: [golang]
-categories: program
+categories: programming
 ---
 
 最近在开发过程中遇到问题，追踪了很久后发现是golang的经典问题，在for循环中使用了goroutine,在goroutine中使用了for循环的参数。
