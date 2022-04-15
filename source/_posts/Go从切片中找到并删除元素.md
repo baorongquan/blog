@@ -17,15 +17,15 @@
 package main
 import "fmt"
 func main () {
-  s1 := []int{1, 2, 3, 4, 5, 6}
+    s1 := []int{1, 2, 3, 4, 5, 6}
     s2 := []int{1, 2, 5, 5, 5, 6}
     s3 := []int{5, 5, 5, 5, 5, 1}
     s4 := []int{5, 5, 5, 5, 5, 5}
-  fmt.Println(delete(s1,5))
-  fmt.Println(delete(s2,5))
-  fmt.Println(delete(s3,5))
-  fmt.Println(delete(s4,5))
-}
+    fmt.Println(delete(s1,5))
+    fmt.Println(delete(s2,5))
+    fmt.Println(delete(s3,5))
+    fmt.Println(delete(s4,5))
+} 
 
 func delete(s []int, item int) []int{
     length := len(s)
