@@ -11,42 +11,46 @@
 
 下面介绍一种方式，只需要遍历一次，且不需要开辟多余的内存空间。
 
-方案3：基于我们最后要把找到的元素进行删除，那么在遍历时找到一个元素就可以把它和最后一个元素进行替换并用一个变量count记录替换的次数，最后只需要取[0:len(s)-count]就可以得到最后的结果了。代码展示一下
+方案3：
+根本目的是我们要把找到的元素进行删除，那么我们用一个count来表示最后需要保留的元素的数量，
+遍历时，遇到不需要删除的元素count就加1，遇到需要删除的元素时就直接continue，此时count对应的下标就是需要删除的元素。
+在执行count加1前我们就可以把下标i和下标count的元素进行替换。即删除了目标元素又保留了原有顺序
+代码展示一下
 
 ```golang
 package main
 import "fmt"
 func main () {
-    s1 := []int{1, 2, 3, 4, 5, 6}
-    s2 := []int{1, 2, 5, 5, 5, 6}
-    s3 := []int{5, 5, 5, 5, 5, 1}
-    s4 := []int{5, 5, 5, 5, 5, 5}
-    fmt.Println(delete(s1,5))
-    fmt.Println(delete(s2,5))
-    fmt.Println(delete(s3,5))
-    fmt.Println(delete(s4,5))
-} 
+  s1 := []int{1, 2, 3, 4, 5, 6}
+  s2 := []int{1, 2, 5, 5, 5, 6}
+  s3 := []int{1, 2, 3, 4}
+  s4 := []int{5, 5, 5, 5, 5, 5}
+  fmt.Println(delete(s1,5))
+  fmt.Println(delete(s2,5))
+  fmt.Println(delete(s3,5))
+  fmt.Println(delete(s4,5))
+}
 
 func delete(s []int, item int) []int{
     length := len(s)
     count := 0
-    for i := 0; i < length-count; i++ {
+    for i := 0; i < length; i++ {
         if s[i] == item {
-            count++
-            for j := length - count; j > i; j-- {
-                if s[j] == item {
-                    count++
-                } else {
-                    s[i],s[j] = s[j],s[i]
-                }
-            }
+            continue
         }
+        
+        if count < i {
+            s[count], s[i] = s[i], s[count]
+        }
+        
+        count++
     }
-  return s[0:length-count]
+    
+  return s[0:count]
 }
 ```
 
-如上述代码所示，我们只需要用一个count来记录替换的次数，不需要多余的空间，时间复杂度也降低了；不过这个方法同样不保证原有顺序。
+如上述代码所示，我们只需要用一个count保留元素的数量，不需要多余的空间，时间复杂度也降低了，还能保证原有顺序。
 
 进一步思考一下，我们的业务数据不可能只会是int类型，也有可能是其他的类型，那么当多种类型都需要这种删除操作时我们要对每一种类型都写一个这样的方法吗？
 
@@ -80,26 +84,24 @@ func main () {
 }
 
 func SliceDeleteItem(slice interface{}, isDelete func(index int) bool) interface{} {
-	sliceValue := reflect.ValueOf(slice)
-	if sliceValue.Kind() != reflect.Slice {
-		panic("需要传入的类型必须是slice")
-	}
-	length := sliceValue.Len()
-	count := 0
-	for i := 0; i < length-count; i++ {
-		if isDelete(i) {
-			count++
-			for j := length - count; j > i; j-- {
-				if isDelete(j) {
-					count++
-				} else {
-					reflect.Swapper(slice)(i, j)
-				}
-			}
-		}
-	}
+    sliceValue := reflect.ValueOf(slice)
+    if sliceValue.Kind() != reflect.Slice {
+        panic("需要传入的类型必须是slice")
+    }
+    length := sliceValue.Len()
+    count := 0
 
-	return sliceValue.Slice(0, length-count).Interface()
+    for i := 0; i < length; i++ {
+        if isDelete(i) {
+            continue
+        }
+        if count < i {
+            reflect.Swapper(slice)(count, i)
+        }
+
+        count++
+    }
+
+    return sliceValue.Slice(0, count).Interface()
 }
-
 ```
